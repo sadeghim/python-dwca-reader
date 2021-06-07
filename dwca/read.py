@@ -164,10 +164,10 @@ class DwCAReader(object):
         return self.core_file.file_descriptor.file_location
 
     def dd_read(self, relative_path, **kwargs):
-        self.__dataframe_read(relative_path, df_module='dask', **kwargs)
+        return self.__dataframe_read(relative_path, df_module='dask', **kwargs)
 
     def pd_read(self, relative_path, **kwargs):
-        self.__dataframe_read(relative_path, df_module='dask', **kwargs)
+        return self.__dataframe_read(relative_path, df_module='dask', **kwargs)
 
     def __dataframe_read(self, relative_path, df_module='pandas', **kwargs):
         """Return a `Pandas <https://pandas.pydata.org>`_ \
