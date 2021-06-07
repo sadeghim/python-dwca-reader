@@ -163,7 +163,10 @@ class DwCAReader(object):
         """
         return self.core_file.file_descriptor.file_location
 
-    def pd_read(self, relative_path, **kwargs):
+    def dd_read(self, relative_path, **kwargs):
+        self.pd_read(relative_path, df_module='dask', **kwargs)
+
+    def pd_read(self, relative_path, df_module='pandas', **kwargs):
         """Return a `Pandas <https://pandas.pydata.org>`_ \
         `DataFrame <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html>`_ for the data file \
         located at `relative_path`.
@@ -193,7 +196,10 @@ class DwCAReader(object):
         if not dwca.vendor._has_pandas:
             raise ImportError("Pandas is missing.")
 
-        from pandas import read_csv
+        if df_module == 'pandas':
+            from pandas import read_csv
+        elif df_module == 'dask':
+            from dask.dataframe import read_csv
 
         kwargs['delimiter'] = datafile_descriptor.fields_terminated_by
         kwargs['skiprows'] = datafile_descriptor.lines_to_ignore
@@ -464,7 +470,7 @@ class DwCAReader(object):
             extension_file.close()
         if self._metafile_handle:
             self._metafile_handle.close()
-        
+
         if self._directory_to_clean:
             remove_tree(self._directory_to_clean)
 
