@@ -209,7 +209,23 @@ class DwCAReader(object):
         kwargs['header'] = None
         kwargs['names'] = datafile_descriptor.short_headers
 
+        # remove the coreid from the names to map the names correctly when there is no index_col
+        # If you use dask dataframe, you cannot specify index_col parameter.
+        index_should_be_fixed = False
+        if 'index_col' in kwargs:
+            if kwargs['index_col'] is None:
+                index_should_be_fixed = True if 'coreid' in kwargs['names'] else False
+        else:
+            index_should_be_fixed = True if 'coreid' in kwargs['names'] else False
+
+        if index_should_be_fixed:
+            kwargs['names'].remove('coreid')
+
         df = read_csv(self.absolute_temporary_path(relative_path), **kwargs)
+
+        if index_should_be_fixed:
+            df.reset_index()
+            df.rename(columns={'index': 'coreid'})
 
         # Add a column for default values, if present in the file descriptor
         for field in datafile_descriptor.fields:
