@@ -207,25 +207,24 @@ class DwCAReader(object):
         kwargs['delimiter'] = datafile_descriptor.fields_terminated_by
         kwargs['skiprows'] = datafile_descriptor.lines_to_ignore
         kwargs['header'] = None
-        kwargs['names'] = datafile_descriptor.short_headers
-
+        names = {f['index']: shorten_term(f['term']) for f in datafile_descriptor.fields}
         # remove the coreid from the names to map the names correctly when there is no index_col
         # If you use dask dataframe, you cannot specify index_col parameter.
-        index_should_be_fixed = False
-        if 'index_col' in kwargs:
-            if kwargs['index_col'] is None:
-                index_should_be_fixed = True if 'coreid' in kwargs['names'] else False
-        else:
-            index_should_be_fixed = True if 'coreid' in kwargs['names'] else False
-
-        if index_should_be_fixed:
-            kwargs['names'].remove('coreid')
-
         df = read_csv(self.absolute_temporary_path(relative_path), **kwargs)
+        if datafile_descriptor.represents_extension:
+            if datafile_descriptor.coreid_index not in names:
+                names[datafile_descriptor.coreid_index] = 'coreid'
+        names = dict(sorted(names.items()))
+        df = df.loc[:, names.keys()]
+        df.columns = names.values()
 
-        if index_should_be_fixed:
-            df.reset_index()
-            df.rename(columns={'index': 'coreid'})
+        if datafile_descriptor.represents_corefile:
+            if 'id' not in names.values():
+                if datafile_descriptor.id_index in names.keys():
+                    df['id'] = df[names[datafile_descriptor.id_index]]
+                else:
+                    df = df.reset_index()
+                    df.columns = ['id'] + list(names.values())
 
         # Add a column for default values, if present in the file descriptor
         for field in datafile_descriptor.fields:
