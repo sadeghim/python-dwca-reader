@@ -213,8 +213,7 @@ class DwCAReader(object):
         df = read_csv(self.absolute_temporary_path(relative_path), **kwargs)
         if datafile_descriptor.represents_extension:
             names[datafile_descriptor.coreid_index] = 'coreid'
-            df.columns = names.values()
-            df['coreid'] = df['coreid'].astype(str)
+            
         names = dict(sorted(names.items()))
         df = df.loc[:, names.keys()]
         df.columns = names.values()
