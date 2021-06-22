@@ -213,20 +213,17 @@ class DwCAReader(object):
         df = read_csv(self.absolute_temporary_path(relative_path), **kwargs)
         if datafile_descriptor.represents_extension:
             names[datafile_descriptor.coreid_index] = 'coreid'
-            
-        names = dict(sorted(names.items()))
-        df = df.loc[:, names.keys()]
-        df.columns = names.values()
 
         if datafile_descriptor.represents_corefile:
             if 'id' not in names.values():
                 if datafile_descriptor.id_index in names.keys():
-                    df['id'] = df[names[datafile_descriptor.id_index]]
+                    df[-1] = df[datafile_descriptor.id_index]  # -1 for index
                 else:
-                    df = df.reset_index()
-                    df.columns = ['id'] + list(names.values())
-                    df['id'] = df['id'].astype(str)
+                    names[datafile_descriptor.id_index] = 'id'
 
+        names = dict(sorted(names.items()))
+        df = df.loc[:, names.keys()]
+        df.columns = names.values()
         # Add a column for default values, if present in the file descriptor
         for field in datafile_descriptor.fields:
             field_default_value = field['default']
