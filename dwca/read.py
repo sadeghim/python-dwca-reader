@@ -212,8 +212,7 @@ class DwCAReader(object):
         # If you use dask dataframe, you cannot specify index_col parameter.
         df = read_csv(self.absolute_temporary_path(relative_path), **kwargs)
         if datafile_descriptor.represents_extension:
-            if datafile_descriptor.coreid_index not in names:
-                names[datafile_descriptor.coreid_index] = 'coreid'
+            names[datafile_descriptor.coreid_index] = 'coreid'
         names = dict(sorted(names.items()))
         df = df.loc[:, names.keys()]
         df.columns = names.values()
